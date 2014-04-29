@@ -44,20 +44,18 @@ public class RestInvocationHandler implements InvocationHandler {
 
     private final Map<Method, RestMethodMetadata> cache = new HashMap<Method, RestMethodMetadata>();
 
-    public RestInvocationHandler(Class<?> restInterface, String url, ClientConfig config) {
+    public RestInvocationHandler(Class<?> restInterface, String url, ObjectMapper objectMapper, ClientConfig config) {
         this.intfacePath = restInterface.getAnnotation(Path.class).value();
         this.baseUrl = url;
-        
+
         if (config != null) {
             this.config = config;
         }
         else {
             this.config = new ClientConfig(); //default config
         }
-        this.objectMapper = createObjectMapper();
-        if (this.config.getJacksonConfigureListener() != null) {
-            this.config.getJacksonConfigureListener().configureObjectMapper(objectMapper);
-        }
+        // Make sure nobody else can re-configure the ObjectMapper while we do that
+        this.objectMapper = objectMapper;
 
         this.httpTemplate = new HttpTemplate(
                 this.objectMapper,

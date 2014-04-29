@@ -176,7 +176,7 @@ public class RestInvocationHandlerTest {
         private RestInvocation invocation;
 
         public TestRestInvocationHandler(Class<?> restInterface, ClientConfig config) {
-            super(restInterface, "https://example.com", config);
+            super(restInterface, "https://example.com", RestInvocationHandler.createObjectMapper(), config);
         }
 
         @Override

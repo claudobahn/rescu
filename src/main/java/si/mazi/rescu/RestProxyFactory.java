@@ -21,6 +21,8 @@
  */
 package si.mazi.rescu;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.lang.reflect.Proxy;
 
 /**
@@ -28,6 +30,8 @@ import java.lang.reflect.Proxy;
  * @see #createProxy(Class, RestInvocationHandler)
  */
 public class RestProxyFactory {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static boolean configured;
 
     /**
      * private Constructor
@@ -46,7 +50,15 @@ public class RestProxyFactory {
      * @return a proxy implementation of restInterface
      */
     public static <I> I createProxy(Class<I> restInterface, String baseUrl, ClientConfig config) {
-        return createProxy(restInterface, new RestInvocationHandler(restInterface, baseUrl, config));
+        synchronized (OBJECT_MAPPER) {
+            if (!configured) {
+                configured = true;
+                if (config != null && config.getJacksonConfigureListener() != null) {
+                    config.getJacksonConfigureListener().configureObjectMapper(OBJECT_MAPPER);
+                }
+            }
+        }
+        return createProxy(restInterface, new RestInvocationHandler(restInterface, baseUrl, OBJECT_MAPPER, config));
     }
 
     public static <I> I createProxy(Class<I> restInterface, String baseUrl) {
